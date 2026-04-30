@@ -1,0 +1,20 @@
+# --- Python Junk ---
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# --- Data & Large Files ---
+data/
+*.zip
+*.npz
+*.csv
+
+# --- Environments ---
+.vscode/
+venv/
+.env
+
+# --- Model Weights (Crucial for Deep Learning) ---
+*.h5
+*.pth
+*.model
