@@ -2,12 +2,15 @@
 __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
+*.pyc
 
 # --- Data & Large Files ---
+# Large Data files (Keep your repo light!)
 data/
 *.zip
 *.npz
 *.csv
+**/data/*.csv
 
 # --- Environments ---
 .vscode/
