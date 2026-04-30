@@ -103,3 +103,100 @@ def model_backward(AL, Y, caches):
         grads["db" + str(l + 1)] = db
 
     return grads
+
+def update_parameters(parameters, grads, learning_rate):
+    """
+    Update parameters using gradient descent.
+    
+    Arguments:
+    parameters -- python dictionary containing your parameters 
+    grads -- python dictionary containing your gradients, output of model_backward
+    
+    Returns:
+    parameters -- python dictionary containing your updated parameters 
+                  W = W - learning_rate * dW
+                  b = b - learning_rate * db
+    """
+    L = len(parameters) // 2 # number of layers
+
+    # Update rule for each parameter
+    for l in range(L):
+        parameters["W" + str(l + 1)] = parameters["W" + str(l + 1)] - learning_rate * grads["dW" + str(l + 1)]
+        parameters["b" + str(l + 1)] = parameters["b" + str(l + 1)] - learning_rate * grads["db" + str(l + 1)]
+        
+    return parameters
+
+def train(X, Y, layer_dims, learning_rate=0.0075, num_iterations=3000, print_cost=False):
+    """
+    Implements an L-layer neural network: [LINEAR->RELU]*(L-1) -> LINEAR->SOFTMAX.
+    
+    Arguments:
+    X -- data, numpy array of shape (num_features, number of examples)
+    Y -- true "label" vector, shape (10, number of examples)
+    layer_dims -- list containing the input size and each layer size
+    learning_rate -- learning rate of the gradient descent update rule
+    num_iterations -- number of iterations of the optimization loop
+    print_cost -- if True, it prints the cost every 100 steps
+    
+    Returns:
+    parameters -- parameters learnt by the model. They can then be used to predict.
+    costs -- list of costs (useful for plotting the learning curve)
+    """
+    np.random.seed(1)
+    costs = []                         
+
+    # 1. Initialize parameters
+    from src.layers import initialize_parameters
+    parameters = initialize_parameters(layer_dims)
+    
+    # 2. Optimization Loop
+    for i in range(0, num_iterations):
+
+        # Forward propagation: [LINEAR -> RELU]*(L-1) -> LINEAR -> SOFTMAX
+        AL, caches = model_forward(X, parameters)
+        
+        # Compute cost
+        cost = compute_cost(AL, Y)
+        
+        # Backward propagation
+        grads = model_backward(AL, Y, caches)
+        
+        # Update parameters
+        parameters = update_parameters(parameters, grads, learning_rate)
+                
+        # Record and print the cost every 100 iterations
+        if print_cost and i % 100 == 0:
+            print(f"Cost after iteration {i}: {cost}")
+            costs.append(cost)
+            
+    return parameters, costs
+
+"""
+It is an excellent observation—the "Expert" way is always to prioritize vectorization wherever possible. However, in deep learning, we actually use a combination of both to get the job done. 
+
+Here is the breakdown of why we used a `for` loop for the layers while still keeping the project "vectorized."
+
+### 1. Layers are "Serial," Not "Parallel"
+While we want to process all **images** at the same time (which we did with NumPy), we cannot process the **layers** at the same time.
+*   **The Dependency:** Layer 2 cannot start its calculation until Layer 1 has finished. Layer 3 has to wait for Layer 2, and so on.
+*   **The Loop:** Because each layer depends on the output of the one before it, we use a `for` loop to move the data through the "stack" of layers sequentially.
+
+### 2. We ARE Using Vectorization (Inside the Loop)
+It is important to notice that inside each iteration of that `for` loop, we are using pure NumPy vectorization:
+*   **The Math:** When we write `np.dot(W, A_prev) + b`, we are multiplying thousands of weights by thousands of pixels across the entire batch of MNIST images simultaneously.
+*   **The Speed:** Because we use NumPy arrays for the data ($X$) and the parameters ($W, b$), we are already leveraging the high-performance C-code that runs under the hood of NumPy.
+
+### 3. Flexibility for "Deep" Networks
+By using a loop to iterate through the `parameters` dictionary, your code is now **dynamic**. 
+*   If you want to change your model from a 3-layer network to a 100-layer "Deep" network, you don't have to rewrite your math. 
+*   You simply change the `layer_dims` list, and the `for` loop handles the rest automatically.
+
+---
+
+### Summary: Loop vs. Vectorization
+| Component | Method | Why? |
+| :--- | :--- | :--- |
+| **Across Examples** | **Vectorized** | To process the whole MNIST batch at once for speed. |
+| **Across Layers** | **For Loop** | Because Layer $L$ requires the output of Layer $L-1$. |
+| **Inside a Layer** | **Vectorized** | To perform matrix multiplication ($W \cdot A + b$) efficiently. |
+"""
