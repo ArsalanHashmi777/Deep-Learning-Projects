@@ -1,19 +1,31 @@
 import numpy as np
 
-def standardize(X):
+def normalize(X):
     """
-    Standardize the input features.
-    Formula: (X - mean) / std
+    Scales pixel values from [0, 255] to [0, 1].
     """
-    mean = np.mean(X, axis=1, keepdims=True)
-    std = np.std(X, axis=1, keepdims=True)
-    # Add a small epsilon to avoid division by zero
-    X_std = (X - mean) / (std + 1e-8)
-    return X_std, mean, std
+    return X / 255.0
 
-def flatten_images(X):
+def one_hot_encode(Y, num_classes=10):
     """
-    Reshapes a (m, 28, 28) image array into a (784, m) array.
+    Converts a label like 3 into [0, 0, 0, 1, 0, 0, 0, 0, 0, 0].
     """
-    m = X.shape[0]
-    return X.reshape(m, -1).T
+    m = Y.shape[0]
+    one_hot = np.zeros((num_classes, m))
+    one_hot[Y, np.arange(m)] = 1
+    return one_hot
+
+def prepare_data(X, Y):
+    """
+    The final 'wrapper' to get data ready for the model.
+    """
+    # Transpose X so its shape is (784, m) instead of (m, 784)
+    X_flattened = X.T
+    
+    # Normalize
+    X_norm = normalize(X_flattened)
+    
+    # One-hot encode labels
+    Y_encoded = one_hot_encode(Y)
+    
+    return X_norm, Y_encoded
