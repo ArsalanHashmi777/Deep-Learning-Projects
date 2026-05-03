@@ -11,7 +11,7 @@ def init_params(layer_dims):
     for l in range(1, L):
         # He Initialization: Good for ReLU activations to keep gradients stable
         params['W' + str(l)] = np.random.randn(layer_dims[l], layer_dims[l-1]) * np.sqrt(2 / layer_dims[l-1])
-        params['b' + str(l)] = np.zeros((layer_dims[l], 1))[cite: 3]
+        params['b' + str(l)] = np.zeros((layer_dims[l], 1))
         
     return params
 
@@ -20,7 +20,7 @@ def linear_forward(A_prev, W, b):
     Computes the linear part of a layer's forward propagation.
     Z = W.A_prev + b
     """
-    Z = np.dot(W, A_prev) + b[cite: 3]
+    Z = np.dot(W, A_prev) + b
     # We save A_prev, W, and b in a cache because we need them for backprop later[cite: 3]
     cache = (A_prev, W, b)
     return Z, cache
