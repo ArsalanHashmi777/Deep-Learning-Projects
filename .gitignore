@@ -6,11 +6,11 @@ __pycache__/
 
 # --- Data & Large Files ---
 # Large Data files (Keep your repo light!)
-data/
+# data/
 *.zip
 *.npz
 *.csv
-**/data/*.csv
+#**/data/*.csv
 
 # --- Environments ---
 .vscode/
